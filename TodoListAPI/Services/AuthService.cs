@@ -1,0 +1,75 @@
+﻿using System.Data;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
+using TodoListAPI.Models;
+
+namespace TodoListAPI.Services;
+
+public interface IAuthService
+{
+    Task<JwtResponse?> LoginAsync(UserLogin login);
+    Task<JwtResponse?> RegisterAsync(UserRegister register);
+}
+
+public class AuthService : IAuthService
+{
+    private readonly string _secretKey;
+    private readonly IUserService _userService;
+
+    public AuthService(IConfiguration configuration, IUserService userService)
+    {
+        _secretKey = configuration.GetSection("Jwt:SecretKey").Value
+            ?? throw new InvalidOperationException("Jwt:SecretKey not found in appsettings.json");
+        _userService = userService;
+    }
+
+    public async Task<JwtResponse?> LoginAsync(UserLogin login)
+    {
+        var user = await _userService.GetUserByEmail(login.Email);
+        if (user == null)
+            return null;
+        
+        if (user.Password != login.Password)
+            return null;
+        
+        var response = new JwtResponse
+        {
+            Token = GenerateJwtToken(user)
+        };
+        
+        return response;
+    }
+
+    private string GenerateJwtToken(UserModel user)
+    {
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Name),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        };
+        
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var handler = new JwtSecurityTokenHandler();
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            NotBefore = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = creds
+        };
+    
+        var token = handler.CreateToken(tokenDescriptor);
+        return handler.WriteToken(token);
+    }
+
+    public Task<JwtResponse?> RegisterAsync(UserRegister register)
+    {
+        throw new NotImplementedException();
+    }
+}

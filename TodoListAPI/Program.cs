@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using TodoListAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,19 +12,25 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var secretKey = builder.Configuration.GetSection("Jwt:SecretKey").Value
+             ?? throw new InvalidOperationException("Jwt:SecretKey not found in appsettings.json");
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             IssuerSigningKey =
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SECRET GOES HERE")),
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
             ValidateAudience = false,
             ValidateIssuer = false,
         };
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddTransient<IAuthService, AuthService>();
 
 var app = builder.Build();
 
