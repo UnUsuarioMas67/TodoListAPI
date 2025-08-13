@@ -8,8 +8,8 @@ namespace TodoListAPI.Services;
 
 public interface IAuthService
 {
-    Task<JwtResponse?> LoginAsync(UserLogin login);
-    Task<JwtResponse?> RegisterAsync(UserRegister register);
+    Task<JwtDTO?> LoginAsync(UserLogin login);
+    Task<JwtDTO?> RegisterAsync(UserRegister register);
 }
 
 public class JwtAuthService : IAuthService
@@ -24,7 +24,7 @@ public class JwtAuthService : IAuthService
         _userService = userService;
     }
 
-    public async Task<JwtResponse?> LoginAsync(UserLogin login)
+    public async Task<JwtDTO?> LoginAsync(UserLogin login)
     {
         var user = await _userService.GetUserByEmail(login.Email);
         if (user == null)
@@ -33,12 +33,12 @@ public class JwtAuthService : IAuthService
         if (user.Password != login.Password)
             return null;
         
-        var response = new JwtResponse
+        var dto = new JwtDTO
         {
             Token = GenerateJwtToken(user)
         };
         
-        return response;
+        return dto;
     }
 
     private string GenerateJwtToken(UserModel user)
@@ -64,7 +64,7 @@ public class JwtAuthService : IAuthService
         return handler.WriteToken(token);
     }
 
-    public Task<JwtResponse?> RegisterAsync(UserRegister register)
+    public Task<JwtDTO?> RegisterAsync(UserRegister register)
     {
         throw new NotImplementedException();
     }

@@ -1,6 +1,6 @@
 ﻿namespace TodoListAPI.Models;
 
-public class JwtResponse
+public class JwtDTO
 {
     public string Token { get; set; }
 }
