@@ -1,9 +1,6 @@
-﻿using System.Data;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Dapper;
-using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using TodoListAPI.Models;
 
@@ -46,24 +43,23 @@ public class JwtAuthService : IAuthService
 
     private string GenerateJwtToken(UserModel user)
     {
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Name),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        };
-        
+        var ci = new ClaimsIdentity([
+            new Claim(ClaimTypes.Name, user.Name),
+            new Claim(ClaimTypes.Email, user.Email)
+        ]);
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var handler = new JwtSecurityTokenHandler();
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(claims),
+            Subject = ci,
             NotBefore = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = creds
         };
-    
+
         var token = handler.CreateToken(tokenDescriptor);
         return handler.WriteToken(token);
     }
