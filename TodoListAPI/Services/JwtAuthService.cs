@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BCrypt.Net;
 using Microsoft.IdentityModel.Tokens;
 using TodoListAPI.Models;
 
@@ -29,9 +30,19 @@ public class JwtAuthService : IAuthService
         var user = await _userService.GetUserByEmail(login.Email);
         if (user == null)
             return null;
-        
-        if (user.Password != login.Password)
-            return null;
+
+        try
+        {
+            var isPasswordValid = BCrypt.Net.BCrypt.Verify(login.Password, user.HashedPassword);
+            if (!isPasswordValid)
+                return null;
+        }
+        catch (Exception e)
+        {
+            if (e is SaltParseException)
+                return null;
+            throw;
+        }
         
         var dto = new JwtDTO
         {
