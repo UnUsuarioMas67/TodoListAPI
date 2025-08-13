@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TodoListAPI.Models;
 using TodoListAPI.Services;
@@ -30,6 +31,11 @@ public class AuthController : ControllerBase
     [Authorize]
     public IActionResult Test()
     {
-        return Ok("Hello World!");
+        return Ok(new
+        {
+            Message = "OK", 
+            Name = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value,
+            Email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value,
+        });
     }
 }
