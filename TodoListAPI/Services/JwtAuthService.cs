@@ -15,12 +15,12 @@ public interface IAuthService
     Task<JwtResponse?> RegisterAsync(UserRegister register);
 }
 
-public class AuthService : IAuthService
+public class JwtAuthService : IAuthService
 {
     private readonly string _secretKey;
     private readonly IUserService _userService;
 
-    public AuthService(IConfiguration configuration, IUserService userService)
+    public JwtAuthService(IConfiguration configuration, IUserService userService)
     {
         _secretKey = configuration.GetSection("Jwt:SecretKey").Value
             ?? throw new InvalidOperationException("Jwt:SecretKey not found in appsettings.json");
