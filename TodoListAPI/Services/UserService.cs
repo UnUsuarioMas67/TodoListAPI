@@ -23,13 +23,12 @@ public class UserService : IUserService
     
     public async Task<UserModel?> GetUserByEmail(string email)
     {
+        var sql = "SELECT * FROM [User] WHERE Email = @Email";
+        
         await using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
 
-        return await conn.QuerySingleOrDefaultAsync<UserModel>(
-            "spGetUserByEmail",
-            new { Email = email },
-            commandType: CommandType.StoredProcedure);
+        return await conn.QuerySingleOrDefaultAsync<UserModel>(sql, new { Email = email });
     }
 
     public async Task<UserModel?> GetUserById(int userId)
