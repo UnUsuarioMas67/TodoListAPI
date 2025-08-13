@@ -33,11 +33,11 @@ public class UserService : IUserService
 
     public async Task<UserModel?> GetUserById(int userId)
     {
-        var sql = "SELECT * FROM [Users] WHERE UserId = @UserId";
+        var sql = "SELECT * FROM [User] WHERE UserId = @UserId";
         
         await using var conn = new SqlConnection(_connectionString);
         await conn.OpenAsync();
 
-        return await conn.QuerySingleOrDefaultAsync<UserModel>(sql,new { UserId = userId });
+        return await conn.QuerySingleOrDefaultAsync<UserModel>(sql, new { UserId = userId });
     }
 }
