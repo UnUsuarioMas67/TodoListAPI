@@ -30,7 +30,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddSingleton<IUserService, UserService>();
-builder.Services.AddTransient<IAuthService, AuthService>();
+builder.Services.AddTransient<IAuthService, JwtAuthService>();
 
 var app = builder.Build();
 
