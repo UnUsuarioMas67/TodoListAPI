@@ -51,6 +51,17 @@ public class JwtAuthService : IAuthService
         
         return dto;
     }
+    
+    public async Task<JwtDTO> RegisterAsync(UserRegister register)
+    {
+        var user = await _userService.AddUser(register);
+        var dto = new JwtDTO
+        {
+            Token = GenerateJwtToken(user)
+        };
+        
+        return dto;
+    }
 
     private string GenerateJwtToken(UserModel user)
     {
@@ -73,10 +84,5 @@ public class JwtAuthService : IAuthService
 
         var token = handler.CreateToken(tokenDescriptor);
         return handler.WriteToken(token);
-    }
-
-    public Task<JwtDTO?> RegisterAsync(UserRegister register)
-    {
-        throw new NotImplementedException();
     }
 }
