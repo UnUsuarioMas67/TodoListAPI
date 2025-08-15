@@ -21,11 +21,18 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLogin login)
     {
-        var response = await _authService.LoginAsync(login);
-        if (response == null)
-            return Unauthorized("Invalid username or password");
+        try
+        {
+            var response = await _authService.LoginAsync(login);
+            if (response == null)
+                return Unauthorized("Invalid username or password");
         
-        return Ok(response);
+            return Ok(response);
+        }
+        catch (PasswordVerificationException)
+        {
+            return Unauthorized("Could not verify password");
+        }
     }
 
     [HttpPost("register")]

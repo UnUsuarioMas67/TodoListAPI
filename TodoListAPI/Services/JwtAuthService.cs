@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using BCrypt.Net;
 using Microsoft.IdentityModel.Tokens;
+using TodoListAPI.Exceptions;
 using TodoListAPI.Models;
 
 namespace TodoListAPI.Services;
@@ -40,7 +41,7 @@ public class JwtAuthService : IAuthService
         catch (Exception e)
         {
             if (e is SaltParseException)
-                return null;
+                throw new PasswordVerificationException(user.UserId, e);
             throw;
         }
         
