@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using TodoListAPI.Exceptions;
 using TodoListAPI.Models;
 
 namespace TodoListAPI.Services;
@@ -45,29 +46,24 @@ public class UserService : IUserService
 
     public async Task<UserModel> AddUser(UserRegister register)
     {
-        var newUser = new UserModel
+        var param = new
         {
-            Name = register.Name,
-            Email = register.Email,
+            register.Name,
+            register.Email,
             HashedPassword = BCrypt.Net.BCrypt.HashPassword(register.Password),
         };
         
-        var sql = "INSERT INTO [User] ([Name], Email, HashedPassword) VALUES (@Name, @Email, @HashedPassword)";
+        if (await GetUserByEmail(register.Email) != null)
+            throw new DuplicateEmailException(register.Email);
 
-        try
-        {
-            await using var conn = new SqlConnection(_connectionString);
-            await conn.OpenAsync();
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
 
-            await conn.ExecuteAsync(sql, new { newUser.Name, newUser.Email, newUser.HashedPassword });
-        }
-        catch (SqlException e)
-        {
-            if (e.Number == 2627 && e.Message.Contains("Cannot insert duplicate key in object 'dbo.User'."))
-                throw new ArgumentException("Duplicate email address", e);
-            throw;
-        }
-        
-        return (await GetUserByEmail(register.Email))!;
+        var createdUser = await conn.QueryFirstOrDefaultAsync<UserModel>(
+            "sp_InsertAndSelectUser",
+            param,
+            commandType: CommandType.StoredProcedure);
+
+        return createdUser ?? throw new DuplicateEmailException(register.Email);;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TodoListAPI.Exceptions;
 using TodoListAPI.Models;
 using TodoListAPI.Services;
 
@@ -30,8 +31,15 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(UserRegister register)
     {
-        var response = await _authService.RegisterAsync(register);
-        return Ok(response);
+        try
+        {
+            var response = await _authService.RegisterAsync(register);
+            return Ok(response);
+        }
+        catch (DuplicateEmailException e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     [HttpGet("test")]
