@@ -68,7 +68,8 @@ public class JwtAuthService : IAuthService
     {
         var ci = new ClaimsIdentity([
             new Claim(ClaimTypes.Name, user.Name),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim("id", user.UserId.ToString())
         ]);
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));

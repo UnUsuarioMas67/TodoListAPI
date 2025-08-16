@@ -58,6 +58,7 @@ public class AuthController : ControllerBase
             Message = "OK", 
             Name = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value,
             Email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value,
+            Id = HttpContext.User.FindFirst("id")?.Value,
         });
     }
 }
