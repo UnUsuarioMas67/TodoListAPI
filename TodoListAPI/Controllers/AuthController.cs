@@ -8,7 +8,6 @@ using TodoListAPI.Services;
 namespace TodoListAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
