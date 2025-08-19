@@ -17,18 +17,18 @@ public interface IAuthService
 public class JwtAuthService : IAuthService
 {
     private readonly string _secretKey;
-    private readonly IUserService _userService;
+    private readonly IUsersRepository _usersRepository;
 
-    public JwtAuthService(IConfiguration configuration, IUserService userService)
+    public JwtAuthService(IConfiguration configuration, IUsersRepository usersRepository)
     {
         _secretKey = configuration.GetSection("Jwt:SecretKey").Value
             ?? throw new InvalidOperationException("Jwt:SecretKey not found in appsettings.json");
-        _userService = userService;
+        _usersRepository = usersRepository;
     }
 
     public async Task<JwtDTO?> LoginAsync(UserLogin login)
     {
-        var user = await _userService.GetUserByEmail(login.Email);
+        var user = await _usersRepository.GetUserByEmail(login.Email);
         if (user == null)
             return null;
 
@@ -55,7 +55,7 @@ public class JwtAuthService : IAuthService
     
     public async Task<JwtDTO> RegisterAsync(UserRegister register)
     {
-        var user = await _userService.AddUser(register);
+        var user = await _usersRepository.AddUser(register);
         var dto = new JwtDTO
         {
             Token = GenerateJwtToken(user)
