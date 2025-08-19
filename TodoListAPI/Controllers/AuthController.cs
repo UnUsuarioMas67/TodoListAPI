@@ -20,6 +20,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLogin login)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
         try
         {
             var response = await _authService.LoginAsync(login);
@@ -37,6 +40,9 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(UserRegister register)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
         try
         {
             var response = await _authService.RegisterAsync(register);
