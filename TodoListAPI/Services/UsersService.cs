@@ -6,18 +6,18 @@ using TodoListAPI.Models;
 
 namespace TodoListAPI.Services;
 
-public interface IUsersRepository
+public interface IUsersService
 {
     Task<UserModel?> GetUserByEmail(string email);
     Task<UserModel?> GetUserById(int userId);
     Task<UserModel> AddUser(UserRegister register);
 }
 
-public class UsersRepository : IUsersRepository
+public class UsersService : IUsersService
 {
     private readonly string _connectionString;
 
-    public UsersRepository(IConfiguration configuration)
+    public UsersService(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("TodoList")
                             ?? throw new InvalidOperationException(
