@@ -109,9 +109,16 @@ public class TasksService : ITasksService
         return tasks.FirstOrDefault() ?? throw new TaskNotFoundException(id);
     }
 
-    public Task<bool> DeleteTaskAsync(int id)
+    public async Task<bool> DeleteTaskAsync(int id)
     {
-        throw new NotImplementedException();
+        var sql = "DELETE FROM Task WHERE TaskId = @TaskId";
+        
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        
+        var rowsAffected = await conn.ExecuteAsync(sql, new { TaskId = id });
+        
+        return rowsAffected != 0;
     }
 
     public Task<List<TaskModel>> GetAllTaskAsync()

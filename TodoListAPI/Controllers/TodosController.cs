@@ -62,10 +62,24 @@ public class TodosController : ControllerBase
     }
 
     [HttpDelete(("{id}"))]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
-        throw new NotImplementedException();
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+        
+        var task = await _tasksService.GetTaskAsync(id);
+        if (task == null)
+            return NotFound();
+
+        var userId = int.Parse(HttpContext.User.FindFirst("id")?.Value!);
+        if (task.Creator.UserId != userId)
+            return Forbid();
+        
+        return await _tasksService.DeleteTaskAsync(id) ? NoContent() : NotFound();
     }
 
     [HttpGet]
