@@ -57,6 +57,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddSingleton<ITasksService, TasksService>();
 builder.Services.AddSingleton<IUsersService, UsersService>();
 builder.Services.AddTransient<IAuthService, JwtAuthService>();
 
