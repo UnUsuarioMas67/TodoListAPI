@@ -10,7 +10,7 @@ public interface ITasksService
     Task<TaskModel> CreateTaskAsync(TaskDTO dto, int userId);
     Task<TaskModel> UpdateTaskAsync(int id, TaskDTO dto);
     Task<bool> DeleteTaskAsync(int id);
-    Task<List<TaskModel>> GetAllTaskAsync();
+    Task<PagedResult<TaskModel>> GetPagedTasksAsync(int page, int pageSize);
     Task<TaskModel?> GetTaskAsync(int id);
 }
 
@@ -121,9 +121,29 @@ public class TasksService : ITasksService
         return rowsAffected != 0;
     }
 
-    public Task<List<TaskModel>> GetAllTaskAsync()
+    public async Task<PagedResult<TaskModel>> GetPagedTasksAsync(int page, int pageSize)
     {
-        throw new NotImplementedException();
+        var sql = """
+                  SELECT t.taskid, t.title, t.description, u.userid, [name], email, hashedpassword
+                  FROM Task t
+                  JOIN dbo.[User] U on t.UserId = U.UserId
+                  """;
+        
+        await using var conn = new SqlConnection(_connectionString);
+        await conn.OpenAsync();
+        
+        var tasks = await conn.QueryAsync<TaskModel, UserModel, TaskModel>(
+            sql,
+            (task, user) =>
+            {
+                task.Creator = user;
+                return task;
+            },
+            splitOn: "UserId");
+        
+        var pagedTasks = new PagedResult<TaskModel>(tasks.ToList(), page, pageSize);
+        
+        return pagedTasks;
     }
 
     public async Task<TaskModel?> GetTaskAsync(int id)

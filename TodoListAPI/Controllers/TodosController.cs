@@ -84,9 +84,10 @@ public class TodosController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] int limit = 10)
+    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int limit = 10)
     {
-        throw new NotImplementedException();
+        var tasks = await _tasksService.GetPagedTasksAsync(page, limit);
+        return Ok(tasks);
     }
 
     [HttpGet("{id}")]
