@@ -70,7 +70,7 @@ public class TodosController : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        
+
         var task = await _tasksService.GetTaskAsync(id);
         if (task == null)
             return NotFound();
@@ -78,15 +78,15 @@ public class TodosController : ControllerBase
         var userId = int.Parse(HttpContext.User.FindFirst("id")?.Value!);
         if (task.Creator.UserId != userId)
             return Forbid();
-        
+
         return await _tasksService.DeleteTaskAsync(id) ? NoContent() : NotFound();
     }
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int limit = 10)
+    public async Task<IActionResult> GetPaged([FromQuery] PaginationParams paginationParams)
     {
-        var tasks = await _tasksService.GetPagedTasksAsync(page, limit);
+        var tasks = await _tasksService.GetPagedTasksAsync(paginationParams);
         return Ok(tasks);
     }
 

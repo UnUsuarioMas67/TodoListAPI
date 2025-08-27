@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using TodoListAPI.Enums;
 using TodoListAPI.Exceptions;
 using TodoListAPI.Models;
 
@@ -10,7 +11,7 @@ public interface ITasksService
     Task<TaskModel> CreateTaskAsync(TaskDTO dto, int userId);
     Task<TaskModel> UpdateTaskAsync(int id, TaskDTO dto);
     Task<bool> DeleteTaskAsync(int id);
-    Task<PagedResult<TaskModel>> GetPagedTasksAsync(int page, int pageSize);
+    Task<PagedResult<TaskModel>> GetPagedTasksAsync(PaginationParams paginationParams);
     Task<TaskModel?> GetTaskAsync(int id);
 }
 
@@ -121,7 +122,7 @@ public class TasksService : ITasksService
         return rowsAffected != 0;
     }
 
-    public async Task<PagedResult<TaskModel>> GetPagedTasksAsync(int page, int pageSize)
+    public async Task<PagedResult<TaskModel>> GetPagedTasksAsync(PaginationParams paginationParams)
     {
         var sql = """
                   SELECT t.taskid, t.title, t.description, u.userid, [name], email, hashedpassword
@@ -141,7 +142,19 @@ public class TasksService : ITasksService
             },
             splitOn: "UserId");
         
-        var pagedTasks = new PagedResult<TaskModel>(tasks.ToList(), page, pageSize);
+        var sortedTasks = tasks.Where(t => 
+            t.Title.Contains(paginationParams.SearchString) || t.Description.Contains(paginationParams.SearchString))
+            .OrderBy(object (t) =>
+            {
+                return paginationParams.SortOption switch
+                {
+                    SortOption.Title => t.Title,
+                    SortOption.Description => t.Description,
+                    _ => t.TaskId
+                };
+            }).ToList();
+        
+        var pagedTasks = new PagedResult<TaskModel>(sortedTasks, paginationParams.Page, paginationParams.PageSize);
         
         return pagedTasks;
     }
