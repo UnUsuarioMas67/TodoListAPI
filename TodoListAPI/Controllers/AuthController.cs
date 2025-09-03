@@ -58,17 +58,4 @@ public class AuthController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-
-    [HttpGet("test")]
-    [Authorize]
-    public IActionResult Test()
-    {
-        return Ok(new
-        {
-            Message = "OK", 
-            Name = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value,
-            Email = HttpContext.User.FindFirst(ClaimTypes.Email)?.Value,
-            Id = HttpContext.User.FindFirst("id")?.Value,
-        });
-    }
 }
